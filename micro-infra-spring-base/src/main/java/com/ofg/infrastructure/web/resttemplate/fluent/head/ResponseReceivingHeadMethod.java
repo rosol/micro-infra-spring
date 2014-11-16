@@ -1,6 +1,9 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.head;
 
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.Executable;
 import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HeadersHaving;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HttpEntitySending;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseIgnoring;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
@@ -8,8 +11,10 @@ import org.springframework.http.ResponseEntity;
  * {@link org.springframework.http.HttpMethod#HEAD} method doesn't have a response
  * so this interface provides a {@link ResponseEntity} result or {@link HttpHeaders} to get headers
  */
-public interface ResponseReceivingHeadMethod extends HeadersHaving<ResponseReceivingHeadMethod> {
-    public abstract ResponseEntity aResponseEntity();
+public interface ResponseReceivingHeadMethod extends
+        HeadersHaving<ResponseReceivingHeadMethod>, Executable<ResponseReceivingHeadMethod>,
+        HttpEntitySending<ResponseReceivingHeadMethod>, ResponseIgnoring {
+    ResponseEntity aResponseEntity();
 
-    public abstract HttpHeaders httpHeaders();
+    HttpHeaders httpHeaders();
 }

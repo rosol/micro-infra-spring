@@ -1,8 +1,5 @@
 package com.ofg.infrastructure.correlationid;
 
-import groovy.lang.Closure;
-import groovy.transform.CompileStatic;
-
 import java.util.concurrent.Callable;
 
 /**
@@ -18,6 +15,9 @@ import java.util.concurrent.Callable;
  * @see ThreadLocal
  */
 public class CorrelationCallable<T> implements Callable<T> {
+    private final String correlationId;
+    private final Callable<T> callable;
+
     public CorrelationCallable(Callable<T> targetCallable) {
         correlationId = CorrelationIdHolder.get();
         callable = targetCallable;
@@ -29,10 +29,7 @@ public class CorrelationCallable<T> implements Callable<T> {
         return callable.call();
     }
 
-    public static Callable<T> withCorrelationId(Closure closure) {
-        return new CorrelationCallable(closure);
+    public static <T> Callable<T> withCorrelationId(Callable<T> closure) {
+        return new CorrelationCallable<T>(closure);
     }
-
-    private String correlationId;
-    private Callable<T> callable;
 }

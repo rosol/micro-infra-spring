@@ -11,6 +11,11 @@ public final class UrlParsingUtils {
 
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    public static final String SLASH = "/";
+    public static final String VAR_OPENING_SIGN = "\\{";
+    public static final String VAR_CLOSING_SIGN = "}";
+    public static final String EMPTY = "";
+
     private UrlParsingUtils() {
         throw new UnsupportedOperationException("Can't instantiate a utility class");
     }
@@ -52,9 +57,4 @@ public final class UrlParsingUtils {
     public static String appendPathToHost(String host, final String path) {
         return host + UrlParsingUtils.prependSlashIfPathDoesNotStartWithSlash(path);
     }
-
-    public static final String SLASH = "/";
-    public static final String VAR_OPENING_SIGN = "\\{";
-    public static final String VAR_CLOSING_SIGN = "}";
-    public static final String EMPTY = "";
 }

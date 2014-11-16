@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
  * It will return a {@link ResponseEntity} of the provided class.
  */
 public interface ResponseEntityReceiving {
-    public abstract <T> ResponseEntity<T> ofType(Class<T> responseType);
+    <T> ResponseEntity<T> ofType(Class<T> responseType);
 }

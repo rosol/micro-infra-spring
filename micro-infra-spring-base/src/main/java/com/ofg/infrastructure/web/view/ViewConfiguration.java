@@ -2,18 +2,18 @@ package com.ofg.infrastructure.web.view;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import groovy.transform.CompileStatic;
+import com.ofg.config.BasicProfiles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.http.converter.*;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,10 +24,17 @@ import java.util.List;
  */
 @Configuration
 public class ViewConfiguration extends WebMvcConfigurerAdapter {
+    @Autowired
+    private Environment environment;
+
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         super.configureMessageConverters(converters);
-        converters.addAll(Collections.addAll(new ByteArrayHttpMessageConverter(), new StringHttpMessageConverter(), new ResourceHttpMessageConverter(), new SourceHttpMessageConverter(), new FormHttpMessageConverter(), mappingJackson2HttpMessageConverter()));
+        converters.add(new ByteArrayHttpMessageConverter());
+        converters.add(new ResourceHttpMessageConverter());
+        converters.add(new SourceHttpMessageConverter());
+        converters.add(new FormHttpMessageConverter());
+        converters.add(mappingJackson2HttpMessageConverter());
     }
 
     private MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
@@ -38,7 +45,7 @@ public class ViewConfiguration extends WebMvcConfigurerAdapter {
     }
 
     private boolean prettyPrintingBasedOnProfile() {
-        return environment.acceptsProfiles(DEVELOPMENT, TEST);
+        return environment.acceptsProfiles(BasicProfiles.DEVELOPMENT, BasicProfiles.TEST);
     }
 
     public Environment getEnvironment() {
@@ -48,7 +55,4 @@ public class ViewConfiguration extends WebMvcConfigurerAdapter {
     public void setEnvironment(Environment environment) {
         this.environment = environment;
     }
-
-    @Autowired
-    private Environment environment;
 }

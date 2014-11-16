@@ -1,5 +1,6 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive;
 
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
 import groovy.transform.TypeChecked;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,7 +20,12 @@ import static org.springframework.http.MediaType.APPLICATION_XML;
  */
 @TypeChecked
 public class WithHeaders<T> implements HeadersSetting<T>, HeadersHaving<T> {
-    public WithHeaders(T parent, Map<String, String> params) {
+    private static final String CONTENT_TYPE_HEADER_NAME = "Content-Type";
+    private final HttpHeaders httpHeaders = new HttpHeaders();
+    private final Parameters params;
+    private final T parent;
+
+    public WithHeaders(T parent, Parameters params) {
         this.params = params;
         this.parent = parent;
     }
@@ -51,7 +57,7 @@ public class WithHeaders<T> implements HeadersSetting<T>, HeadersHaving<T> {
     }
 
     @Override
-    public HeadersSetting<ResponseReceiving> contentType(String contentType) {
+    public HeadersSetting<T> contentType(String contentType) {
         httpHeaders.add(CONTENT_TYPE_HEADER_NAME, contentType);
         updateHeaderParams();
         return this;
@@ -122,12 +128,7 @@ public class WithHeaders<T> implements HeadersSetting<T>, HeadersHaving<T> {
     }
 
     @Override
-    public HeadersSetting<ResponseReceiving> withHeaders() {
+    public HeadersSetting<T> withHeaders() {
         return this;
     }
-
-    private static final String CONTENT_TYPE_HEADER_NAME = "Content-Type";
-    private final HttpHeaders httpHeaders = new HttpHeaders();
-    private final Map params;
-    private final T parent;
 }

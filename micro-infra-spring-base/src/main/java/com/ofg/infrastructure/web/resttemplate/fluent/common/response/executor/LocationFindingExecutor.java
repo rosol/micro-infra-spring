@@ -1,14 +1,14 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor;
 
-import groovy.transform.TypeChecked;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import static com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.HttpEntityUtils.getHttpEntityFrom;
+import static com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.UrlParsingUtils.appendPathToHost;
 
 /**
  * Class that executes {@link RestOperations}.exchange() and from {@link org.springframework.http.ResponseEntity#headers}
@@ -19,24 +19,24 @@ public abstract class LocationFindingExecutor implements LocationReceiving {
         this.restOperations = restOperations;
     }
 
+    protected final Parameters params = new Parameters();
+
+    protected final RestOperations restOperations;
+
     protected abstract HttpMethod getHttpMethod();
 
     @Override
     public URI forLocation() {
-        if (params.url.asBoolean()) {
-            return getLocation(restOperations.exchange(new URI(UrlParsingUtils.appendPathToHost((String) params.host, (URI) params.url)), getHttpMethod(), HttpEntityUtils.getHttpEntityFrom(params), params.request.getClass()));
-        } else if (params.urlTemplate.asBoolean()) {
-            final Object[] objects = (Object[]) params.urlVariablesArray;
-            return getLocation(restOperations.exchange(UrlParsingUtils.appendPathToHost((String) params.host, (String) params.urlTemplate), getHttpMethod(), HttpEntityUtils.getHttpEntityFrom(params), params.request.getClass(), DefaultGroovyMethods.asBoolean(objects) ? objects : (Map<String, ?>) params.urlVariablesMap));
+        if (params.hasUrl()) {
+            return getLocation(restOperations.exchange(URI.create(appendPathToHost(params.host, params.url)), getHttpMethod(), getHttpEntityFrom(params), params.request.getClass()));
+        } else if (params.hasUrlTemplate()) {
+            final Object[] objects = params.urlVariablesArray;
+            return getLocation(restOperations.exchange(appendPathToHost(params.host, params.urlTemplate), getHttpMethod(), getHttpEntityFrom(params), params.request.getClass(), objects != null ? objects : params.urlVariablesMap));
         }
 
         throw new InvalidHttpMethodParametersException(params);
     }
-
     private static URI getLocation(HttpEntity entity) {
         return (entity == null ? null : entity.getHeaders()).getLocation();
     }
-
-    protected final Map params = new LinkedHashMap();
-    protected final RestOperations restOperations;
 }

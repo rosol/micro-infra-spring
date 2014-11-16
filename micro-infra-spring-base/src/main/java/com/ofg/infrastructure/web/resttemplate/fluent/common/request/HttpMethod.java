@@ -20,19 +20,19 @@ public interface HttpMethod<U, T> {
      *
      * @param url
      */
-    public abstract U onUrl(URI url);
+    U onUrl(URI url);
 
     /**
      * Provides a String url to which you want to send a request.
      *
      * @param url
      */
-    public abstract U onUrl(String url);
+    U onUrl(String url);
 
     /**
      * Provides a template URL to which you want to send a request.
      *
      * @param urlTemplate
      */
-    public abstract T onUrlFromTemplate(String urlTemplate);
+    T onUrlFromTemplate(String urlTemplate);
 }

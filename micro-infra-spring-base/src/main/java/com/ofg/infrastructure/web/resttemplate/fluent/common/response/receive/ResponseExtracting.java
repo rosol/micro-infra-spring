@@ -10,7 +10,7 @@ package com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive;
  * @see com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseIgnoring
  */
 public interface ResponseExtracting extends ResponseIgnoring {
-    public abstract ObjectReceiving anObject();
+    ObjectReceiving anObject();
 
-    public abstract ResponseEntityReceiving aResponseEntity();
+    ResponseEntityReceiving aResponseEntity();
 }

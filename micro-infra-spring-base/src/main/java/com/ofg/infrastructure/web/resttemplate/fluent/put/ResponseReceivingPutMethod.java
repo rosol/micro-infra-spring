@@ -1,5 +1,8 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.put;
 
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.LocationReceiving;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HttpEntitySending;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseExtracting;
 import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseReceiving;
 
 /**
@@ -10,5 +13,5 @@ import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.Re
  * @see LocationReceiving
  * @see HttpEntitySending
  */
-public interface ResponseReceivingPutMethod extends ResponseReceiving {
+public interface ResponseReceivingPutMethod extends ResponseReceiving, ResponseExtracting, LocationReceiving, HttpEntitySending<ResponseReceivingPutMethod> {
 }

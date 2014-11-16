@@ -1,10 +1,6 @@
 package com.ofg.infrastructure.web.correlationid;
 
 import com.ofg.infrastructure.correlationid.CorrelationIdHolder;
-import groovy.lang.Closure;
-import groovy.transform.CompileStatic;
-import groovy.util.logging.Slf4j;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -47,46 +43,26 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     }
 
     private void setupCorrelationId(HttpServletRequest request, HttpServletResponse response) {
-        final String from = getCorrelationIdFrom(request);
-        String correlationId = isNotBlank(from) ? from : getCorrelationIdFrom(response);
+        final String correlationIdFromRequest = getCorrelationIdFrom(request);
+        String correlationId = isNotBlank(correlationIdFromRequest) ? correlationIdFromRequest : getCorrelationIdFrom(response);
         correlationId = createNewCorrIdIfEmpty(correlationId);
         CorrelationIdHolder.set(correlationId);
         addCorrelationIdToResponseIfNotPresent(response, correlationId);
     }
 
-    private String getCorrelationIdFrom(final HttpServletResponse response) {
-        return withLoggingAs("response", new Closure<String>(this, this) {
-            public String doCall(Object it) {
-                return response.getHeader(CORRELATION_ID_HEADER);
-            }
-
-            public String doCall() {
-                return doCall(null);
-            }
-
-        });
+    private String getCorrelationIdFrom(HttpServletResponse response) {
+        return withLoggingAs("response", response.getHeader(CORRELATION_ID_HEADER));
     }
 
-    private String getCorrelationIdFrom(final HttpServletRequest request) {
-        return withLoggingAs("request", new Closure<String>(this, this) {
-            public String doCall(Object it) {
-                return request.getHeader(CORRELATION_ID_HEADER);
-            }
-
-            public String doCall() {
-                return doCall(null);
-            }
-
-        });
+    private String getCorrelationIdFrom(HttpServletRequest request) {
+        return withLoggingAs("request", request.getHeader(CORRELATION_ID_HEADER));
     }
 
-    private String withLoggingAs(String whereWasFound, Closure correlationIdGetter) {
-        String correlationId = correlationIdGetter.call();
+    private String withLoggingAs(String whereWasFound, String correlationId) {
         if (StringUtils.hasText(correlationId)) {
             MDC.put(CORRELATION_ID_HEADER, correlationId);
             log.debug("Found correlationId in " + whereWasFound + ": " + correlationId);
         }
-
         return correlationId;
     }
 

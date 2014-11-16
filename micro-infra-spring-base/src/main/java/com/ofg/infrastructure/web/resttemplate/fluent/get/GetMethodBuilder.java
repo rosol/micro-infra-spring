@@ -1,8 +1,7 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.get;
 
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
 import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.*;
-import groovy.lang.Delegate;
-import groovy.transform.TypeChecked;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,14 +9,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Implementation of the {@link org.springframework.http.HttpMethod#GET method} fluent API
  */
-public class GetMethodBuilder implements GetMethod, UrlParameterizableGetMethod, ResponseReceivingGetMethod, HeadersHaving {
+public class GetMethodBuilder implements GetMethod, UrlParameterizableGetMethod, ResponseReceivingGetMethod {
+
+    public static final String EMPTY_HOST = "";
+
+    private final Parameters params = new Parameters();
+    private final RestOperations restOperations;
+    private final BodyContainingWithHeaders withHeaders;
+
     public GetMethodBuilder(String host, RestOperations restOperations) {
         this.restOperations = restOperations;
         params.host = host;
@@ -36,7 +41,7 @@ public class GetMethodBuilder implements GetMethod, UrlParameterizableGetMethod,
 
     @Override
     public ResponseReceivingGetMethod onUrl(String url) {
-        params.url = new URI(url);
+        params.url = URI.create(url);
         return this;
     }
 
@@ -92,57 +97,63 @@ public class GetMethodBuilder implements GetMethod, UrlParameterizableGetMethod,
         aResponseEntity().ofType(Object.class);
     }
 
-    public HeadersSetting<ResponseReceiving> withHeaders() {//todo
+    public HeadersSetting<ResponseReceiving> withHeaders() {
+        return withHeaders.withHeaders();
     }
 
-    public ResponseReceiving andExecuteFor() {//todo
+    public ResponseExtracting andExecuteFor() {
+        return this;
     }
 
-    public WithHeaders accept(List<MediaType> acceptableMediaTypes) {//todo
+    public HeadersSetting accept(List acceptableMediaTypes) {
+        return withHeaders.accept(acceptableMediaTypes);
     }
 
-    public WithHeaders accept(MediaType... acceptableMediaTypes) {//todo
+    public HeadersSetting accept(MediaType[] acceptableMediaTypes) {
+        return withHeaders.accept(acceptableMediaTypes);
     }
 
-    public WithHeaders cacheControl(String cacheControl) {//todo
+    public HeadersSetting cacheControl(String cacheControl) {
+        return withHeaders.cacheControl(cacheControl);
     }
 
-    public WithHeaders contentType(MediaType mediaType) {//todo
+    public HeadersSetting contentType(MediaType mediaType) {
+        return withHeaders.contentType(mediaType);
     }
 
-    public HeadersSetting<ResponseReceiving> contentType(String contentType) {//todo
+    public HeadersSetting contentType(String contentType) {
+        return withHeaders.contentType(contentType);
     }
 
-    public HeadersSetting<ResponseReceiving> contentTypeJson() {//todo
+    public HeadersSetting contentTypeJson() {
+        return withHeaders.contentTypeJson();
     }
 
-    public HeadersSetting<ResponseReceiving> contentTypeXml() {//todo
+    public HeadersSetting contentTypeXml() {
+        return withHeaders.contentTypeXml();
     }
 
-    public WithHeaders expires(long expires) {//todo
+    public HeadersSetting expires(long expires) {
+        return withHeaders.expires(expires);
     }
 
-    public WithHeaders lastModified(long lastModified) {//todo
+    public HeadersSetting lastModified(long lastModified) {
+        return withHeaders.lastModified(lastModified);
     }
 
-    public WithHeaders location(URI location) {//todo
+    public HeadersSetting location(URI location) {
+        return withHeaders.location(location);
     }
 
-    public WithHeaders header(String headerName, String headerValue) {//todo
+    public HeadersSetting header(String headerName, String headerValue) {
+        return withHeaders.header(headerName, headerValue);
     }
 
-    public WithHeaders headers(Map<String, String> values) {//todo
+    public HeadersSetting headers(Map values) {
+        return withHeaders.headers(values);
     }
 
-    public HeadersSetting<ResponseReceiving> headers(HttpHeaders httpHeaders) {//todo
+    public HeadersSetting headers(HttpHeaders httpHeaders) {
+        return withHeaders.headers(httpHeaders);
     }
-
-    public void updateHeaderParams() {//todo
-    }
-
-    public static final String EMPTY_HOST = "";
-    private final Map params = new LinkedHashMap();
-    private final RestOperations restOperations;
-    @Delegate
-    private final BodyContainingWithHeaders withHeaders;
 }

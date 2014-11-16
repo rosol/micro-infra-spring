@@ -1,8 +1,9 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.head;
 
-import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.*;
-import groovy.lang.Delegate;
-import groovy.transform.TypeChecked;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.BodylessWithHeaders;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HeadersHaving;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HeadersSetting;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,14 +11,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Implementation of the {@link org.springframework.http.HttpMethod#HEAD method} fluent API
  */
-public class HeadMethodBuilder implements HeadMethod, UrlParameterizableHeadMethod, ResponseReceivingHeadMethod, HeadersHaving {
+public class HeadMethodBuilder implements HeadMethod, UrlParameterizableHeadMethod, ResponseReceivingHeadMethod, HeadersHaving<ResponseReceivingHeadMethod> {
+    public static final String EMPTY_HOST = "";
+
+    private final Parameters params = new Parameters();
+    private final RestOperations restOperations;
+    private final BodylessWithHeaders<ResponseReceivingHeadMethod> withHeaders;
+
     public HeadMethodBuilder(String host, RestOperations restOperations) {
         this.restOperations = restOperations;
         params.host = host;
@@ -36,7 +42,7 @@ public class HeadMethodBuilder implements HeadMethod, UrlParameterizableHeadMeth
 
     @Override
     public ResponseReceivingHeadMethod onUrl(String url) {
-        params.url = new URI(url);
+        params.url = URI.create(url);
         return this;
     }
 
@@ -80,57 +86,63 @@ public class HeadMethodBuilder implements HeadMethod, UrlParameterizableHeadMeth
         aResponseEntity();
     }
 
-    public HeadersSetting<ResponseReceivingHeadMethod> withHeaders() {//todo
+    public HeadersSetting<ResponseReceivingHeadMethod> withHeaders() {
+        return withHeaders.withHeaders();
     }
 
-    public WithHeaders accept(List<MediaType> acceptableMediaTypes) {//todo
+    public ResponseReceivingHeadMethod andExecuteFor() {
+        return withHeaders.andExecuteFor();
     }
 
-    public WithHeaders accept(MediaType... acceptableMediaTypes) {//todo
+    public HeadersSetting accept(List acceptableMediaTypes) {
+        return withHeaders.accept(acceptableMediaTypes);
     }
 
-    public WithHeaders cacheControl(String cacheControl) {//todo
+    public HeadersSetting accept(MediaType[] acceptableMediaTypes) {
+        return withHeaders.accept(acceptableMediaTypes);
     }
 
-    public WithHeaders contentType(MediaType mediaType) {//todo
+    public HeadersSetting cacheControl(String cacheControl) {
+        return withHeaders.cacheControl(cacheControl);
     }
 
-    public HeadersSetting<ResponseReceiving> contentType(String contentType) {//todo
+    public HeadersSetting contentType(MediaType mediaType) {
+        return withHeaders.contentType(mediaType);
     }
 
-    public HeadersSetting<ResponseReceivingHeadMethod> contentTypeJson() {//todo
+    public HeadersSetting contentType(String contentType) {
+        return withHeaders.contentType(contentType);
     }
 
-    public HeadersSetting<ResponseReceivingHeadMethod> contentTypeXml() {//todo
+    public HeadersSetting contentTypeJson() {
+        return withHeaders.contentTypeJson();
     }
 
-    public WithHeaders expires(long expires) {//todo
+    public HeadersSetting contentTypeXml() {
+        return withHeaders.contentTypeXml();
     }
 
-    public WithHeaders lastModified(long lastModified) {//todo
+    public HeadersSetting expires(long expires) {
+        return withHeaders.expires(expires);
     }
 
-    public WithHeaders location(URI location) {//todo
+    public HeadersSetting lastModified(long lastModified) {
+        return withHeaders.lastModified(lastModified);
     }
 
-    public WithHeaders header(String headerName, String headerValue) {//todo
+    public HeadersSetting location(URI location) {
+        return withHeaders.location(location);
     }
 
-    public WithHeaders headers(Map<String, String> values) {//todo
+    public HeadersSetting header(String headerName, String headerValue) {
+        return withHeaders.header(headerName, headerValue);
     }
 
-    public HeadersSetting<ResponseReceivingHeadMethod> headers(HttpHeaders httpHeaders) {//todo
+    public HeadersSetting headers(Map values) {
+        return withHeaders.headers(values);
     }
 
-    public void updateHeaderParams() {//todo
+    public HeadersSetting headers(HttpHeaders httpHeaders) {
+        return withHeaders.headers(httpHeaders);
     }
-
-    public ResponseReceivingHeadMethod andExecuteFor() {//todo
-    }
-
-    public static final String EMPTY_HOST = "";
-    private final Map params = new LinkedHashMap();
-    private final RestOperations restOperations;
-    @Delegate
-    private final BodylessWithHeaders<ResponseReceivingHeadMethod> withHeaders;
 }

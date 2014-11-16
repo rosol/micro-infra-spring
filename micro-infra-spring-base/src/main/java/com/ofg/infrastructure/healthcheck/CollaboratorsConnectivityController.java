@@ -1,13 +1,10 @@
 package com.ofg.infrastructure.healthcheck;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 import com.ofg.infrastructure.discovery.ServiceResolver;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
-import groovy.json.JsonBuilder;
-import groovy.lang.Closure;
-import groovy.transform.CompileStatic;
-import groovy.transform.PackageScope;
-import groovy.util.logging.Slf4j;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.invoke.MethodHandles;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -44,17 +40,17 @@ class CollaboratorsConnectivityController {
     @RequestMapping(value = "/collaborators", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public String getCollaboratorsConnectivityInfo() {
         Set<String> collaborators = serviceResolver.fetchCollaboratorsNames();
-        Map collaboratorsState = DefaultGroovyMethods.collectEntries(collaborators, new Closure<LinkedHashMap>(this, this) {
-            public LinkedHashMap doCall(String collaborator) {
-                LinkedHashMap map = new LinkedHashMap(1);
-                map.put(, checkConnectionStatus(collaborator));
-                return map;
+        Collection<String> transformedCollaborators = Collections2.transform(collaborators, new Function<String, String>() {
+            @Override
+            public String apply(String collaborator) {
+                return "\"" + collaborator + "\":" + checkConnectionStatus(collaborator) + "\"";
             }
-
         });
-        JsonBuilder json = new JsonBuilder();
-        json.call(collaboratorsState);
-        return json.toString();
+        return buildCollaboratorsJson(transformedCollaborators);
+    }
+
+    private String buildCollaboratorsJson(Collection<String> transformedCollaborators) {
+        return "{" + Joiner.on(",").join(transformedCollaborators) + "}";
     }
 
     private String checkConnectionStatus(String serviceName) {
@@ -65,7 +61,7 @@ class CollaboratorsConnectivityController {
 
     private String pingService(final String serviceName) {
         try {
-            return serviceRestClient.forService(serviceName).get().onUrl("/ping").andExecuteFor().anObject().ofType(String.class);
+            return serviceRestClient.forService(serviceName).get().onUrl("/ping").anObject().ofType(String.class);
         } catch (Exception e) {
             log.error("Unable to ping service \'" + serviceName + "\'!", e);
             return "ERROR";

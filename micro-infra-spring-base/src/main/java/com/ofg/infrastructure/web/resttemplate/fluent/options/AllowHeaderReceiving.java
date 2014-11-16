@@ -12,5 +12,5 @@ public interface AllowHeaderReceiving {
     /**
      * @return - a set of values from the {@link org.springframework.http.HttpHeaders#ALLOW} header
      */
-    public abstract Set<HttpMethod> allow();
+    Set<HttpMethod> allow();
 }

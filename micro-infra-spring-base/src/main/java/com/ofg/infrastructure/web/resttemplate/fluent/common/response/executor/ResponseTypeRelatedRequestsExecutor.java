@@ -1,13 +1,14 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor;
 
-import groovy.transform.TypeChecked;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
-import java.util.Map;
+
+import static com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.HttpEntityUtils.getHttpEntityFrom;
+import static com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.UrlParsingUtils.appendPathToHost;
 
 /**
  * Abstraction over {@link RestOperations} that for a {@link com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.ResponseTypeRelatedRequestsExecutor#getHttpMethod()}
@@ -24,7 +25,11 @@ import java.util.Map;
  * @see RestOperations
  */
 public abstract class ResponseTypeRelatedRequestsExecutor<T> {
-    public ResponseTypeRelatedRequestsExecutor(Map params, RestOperations restOperations, Class<T> responseType) {
+    protected final RestOperations restOperations;
+    protected final Parameters params;
+    protected final Class<T> responseType;
+
+    public ResponseTypeRelatedRequestsExecutor(Parameters params, RestOperations restOperations, Class<T> responseType) {
         this.restOperations = restOperations;
         this.params = params;
         this.responseType = responseType;
@@ -33,17 +38,12 @@ public abstract class ResponseTypeRelatedRequestsExecutor<T> {
     protected abstract HttpMethod getHttpMethod();
 
     public ResponseEntity<T> exchange() {
-        if (params.url.asBoolean()) {
-            return restOperations.exchange(new URI(UrlParsingUtils.appendPathToHost((String) params.host, (URI) params.url)), getHttpMethod(), HttpEntityUtils.getHttpEntityFrom(params), responseType);
-        } else if (params.urlTemplate.asBoolean()) {
-            final Object[] objects = (Object[]) params.urlVariablesArray;
-            return restOperations.exchange(UrlParsingUtils.appendPathToHost((String) params.host, (String) params.urlTemplate), getHttpMethod(), HttpEntityUtils.getHttpEntityFrom(params), responseType, DefaultGroovyMethods.asBoolean(objects) ? objects : (Map<String, ?>) params.urlVariablesMap);
+        if (params.hasUrl()) {
+            return restOperations.exchange(URI.create(appendPathToHost(params.host, params.url)), getHttpMethod(), getHttpEntityFrom(params), responseType);
+        } else if (params.hasUrlTemplate()) {
+            final Object[] objects = params.urlVariablesArray;
+            return restOperations.exchange(appendPathToHost(params.host, params.urlTemplate), getHttpMethod(), getHttpEntityFrom(params), responseType, objects != null ? objects : params.urlVariablesMap);
         }
-
         throw new InvalidHttpMethodParametersException(params);
     }
-
-    protected final RestOperations restOperations;
-    protected final Map params;
-    protected final Class<T> responseType;
 }

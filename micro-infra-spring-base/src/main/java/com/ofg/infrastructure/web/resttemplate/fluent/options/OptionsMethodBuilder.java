@@ -1,13 +1,14 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.options;
 
-import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.*;
-import groovy.lang.Delegate;
-import groovy.transform.TypeChecked;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HeadersHaving;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.HeadersSetting;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ObjectReceiving;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseEntityReceiving;
 import org.springframework.http.*;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,13 @@ import java.util.Set;
 /**
  * Implementation of the {@link org.springframework.http.HttpMethod#HEAD method} fluent API
  */
-public class OptionsMethodBuilder implements AllowHeaderReceiving, OptionsMethod, UrlParameterizableOptionsMethod, ResponseReceivingOptionsMethod, HeadersHaving {
+public class OptionsMethodBuilder implements AllowHeaderReceiving, OptionsMethod, UrlParameterizableOptionsMethod, ResponseReceivingOptionsMethod, HeadersHaving<ResponseReceivingOptionsMethod> {
+    public static final String EMPTY_HOST = "";
+    private final Parameters params = new Parameters();
+    private final RestOperations restOperations;
+    private final AllowContainingWithHeaders withHeaders;
+    private final OptionsAllowHeaderExecutor allowHeaderExecutor;
+
     public OptionsMethodBuilder(String host, RestOperations restOperations) {
         this.restOperations = restOperations;
         params.host = host;
@@ -35,7 +42,7 @@ public class OptionsMethodBuilder implements AllowHeaderReceiving, OptionsMethod
 
     @Override
     public ResponseReceivingOptionsMethod onUrl(String url) {
-        params.url = new URI(url);
+        params.url = URI.create(url);
         return this;
     }
 
@@ -96,59 +103,63 @@ public class OptionsMethodBuilder implements AllowHeaderReceiving, OptionsMethod
         aResponseEntity().ofType(Object.class);
     }
 
-    public HeadersSetting<ResponseReceivingOptionsMethod> withHeaders() {//todo
+    public HeadersSetting<ResponseReceivingOptionsMethod> withHeaders() {
+        return withHeaders.withHeaders();
     }
 
-    public WithHeaders accept(List<MediaType> acceptableMediaTypes) {//todo
+    public ResponseReceivingOptionsMethod andExecuteFor() {
+        return withHeaders.andExecuteFor();
     }
 
-    public WithHeaders accept(MediaType... acceptableMediaTypes) {//todo
+    public HeadersSetting accept(List acceptableMediaTypes) {
+        return withHeaders.accept(acceptableMediaTypes);
     }
 
-    public WithHeaders cacheControl(String cacheControl) {//todo
+    public HeadersSetting accept(MediaType[] acceptableMediaTypes) {
+        return withHeaders.accept(acceptableMediaTypes);
     }
 
-    public WithHeaders contentType(MediaType mediaType) {//todo
+    public HeadersSetting cacheControl(String cacheControl) {
+        return withHeaders.cacheControl(cacheControl);
     }
 
-    public HeadersSetting<ResponseReceiving> contentType(String contentType) {//todo
+    public HeadersSetting contentType(MediaType mediaType) {
+        return withHeaders.contentType(mediaType);
     }
 
-    public HeadersSetting<ResponseReceivingOptionsMethod> contentTypeJson() {//todo
+    public HeadersSetting contentType(String contentType) {
+        return withHeaders.contentType(contentType);
     }
 
-    public HeadersSetting<ResponseReceivingOptionsMethod> contentTypeXml() {//todo
+    public HeadersSetting contentTypeJson() {
+        return withHeaders.contentTypeJson();
     }
 
-    public WithHeaders expires(long expires) {//todo
+    public HeadersSetting contentTypeXml() {
+        return withHeaders.contentTypeXml();
     }
 
-    public WithHeaders lastModified(long lastModified) {//todo
+    public HeadersSetting expires(long expires) {
+        return withHeaders.expires(expires);
     }
 
-    public WithHeaders location(URI location) {//todo
+    public HeadersSetting lastModified(long lastModified) {
+        return withHeaders.lastModified(lastModified);
     }
 
-    public WithHeaders header(String headerName, String headerValue) {//todo
+    public HeadersSetting location(URI location) {
+        return withHeaders.location(location);
     }
 
-    public WithHeaders headers(Map<String, String> values) {//todo
+    public HeadersSetting header(String headerName, String headerValue) {
+        return withHeaders.header(headerName, headerValue);
     }
 
-    public HeadersSetting<ResponseReceivingOptionsMethod> headers(HttpHeaders httpHeaders) {//todo
+    public HeadersSetting headers(Map values) {
+        return withHeaders.headers(values);
     }
 
-    public void updateHeaderParams() {//todo
+    public HeadersSetting headers(HttpHeaders httpHeaders) {
+        return withHeaders.headers(httpHeaders);
     }
-
-    public ResponseReceivingOptionsMethod andExecuteFor() {//todo
-    }
-
-    public static final String EMPTY_HOST = "";
-    private final Map params = new LinkedHashMap();
-    private final RestOperations restOperations;
-    @Delegate
-    private final AllowContainingWithHeaders withHeaders;
-    @Delegate
-    private final OptionsAllowHeaderExecutor allowHeaderExecutor;
 }

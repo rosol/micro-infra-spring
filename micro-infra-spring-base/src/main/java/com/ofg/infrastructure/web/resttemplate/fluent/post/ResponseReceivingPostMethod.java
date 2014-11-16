@@ -1,5 +1,7 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.post;
 
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.LocationReceiving;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseExtracting;
 import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.ResponseReceiving;
 
 /**
@@ -9,5 +11,5 @@ import com.ofg.infrastructure.web.resttemplate.fluent.common.response.receive.Re
  * @see ResponseReceiving
  * @see LocationReceiving
  */
-public interface ResponseReceivingPostMethod extends ResponseReceiving {
+public interface ResponseReceivingPostMethod extends ResponseReceiving, LocationReceiving, ResponseExtracting {
 }

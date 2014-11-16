@@ -1,7 +1,7 @@
 package com.ofg.infrastructure.web.exception;
 
-import groovy.lang.Closure;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -35,9 +34,11 @@ public class ControllerExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private static final String INTERNAL_ERROR = "internal error";
+
     @ExceptionHandler(BadParametersException.class)
     @ResponseBody
-    public List<BadParameterError> handleBadParametersExceptions(BadParametersException exception, HttpServletResponse response) {
+    public Collection<BadParameterError> handleBadParametersExceptions(BadParametersException exception, HttpServletResponse response) {
         response.setStatus(SC_BAD_REQUEST);
         return getListOfBindErrors(exception);
     }
@@ -47,26 +48,23 @@ public class ControllerExceptionHandler {
     public Map<String, String> handleAnyOtherExceptions(Exception exception, HttpServletResponse response) {
         response.setStatus(SC_BAD_REQUEST);
         log.error("Unexpected exception: ", exception);
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>(2);
+        Map<String, String> map = new LinkedHashMap<String, String>(2);
         map.put("error", INTERNAL_ERROR);
         map.put("message", exception.getMessage());
         return map;
     }
 
-    private List<BadParameterError> getListOfBindErrors(BadParametersException exception) {
-        final List<BadParameterError> bindErrorList = new ArrayList<BadParameterError>();
-        DefaultGroovyMethods.each(exception.getErrors(), new Closure<Boolean>(this, this) {
-            public Boolean doCall(ObjectError error) {
-                return bindErrorList.add(getBindError(error));
+    private Collection<BadParameterError> getListOfBindErrors(BadParametersException exception) {
+        return Collections2.transform(exception.getErrors(), new Function<ObjectError, BadParameterError>() {
+            @Override
+            public BadParameterError apply(ObjectError error) {
+                return getBindError(error);
             }
-
         });
-        return bindErrorList;
     }
 
     private BadParameterError getBindError(ObjectError error) {
-        return new BadParameterError(DefaultGroovyMethods.getProperties(error).get("field").toString(), error.getDefaultMessage());
+        //TODO: Was -> error.properties['field'].toString() but I guess sth's wrong
+        return new BadParameterError(error.getObjectName(), error.getDefaultMessage());
     }
-
-    private static final String INTERNAL_ERROR = "internal error";
 }

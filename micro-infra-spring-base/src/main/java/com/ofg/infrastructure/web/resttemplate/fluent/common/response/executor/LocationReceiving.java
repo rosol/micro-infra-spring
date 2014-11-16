@@ -8,5 +8,5 @@ import java.net.URI;
  * {@link org.springframework.http.ResponseEntity}.
  */
 public interface LocationReceiving {
-    public abstract URI forLocation();
+    URI forLocation();
 }

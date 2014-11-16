@@ -2,14 +2,10 @@ package com.ofg.infrastructure.web.correlationid;
 
 import com.ofg.infrastructure.correlationid.CorrelationCallable;
 import com.ofg.infrastructure.correlationid.CorrelationIdHolder;
-import groovy.lang.Closure;
-import groovy.transform.CompileStatic;
-import groovy.util.logging.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -32,7 +28,7 @@ import java.util.concurrent.Callable;
  * </ul>
  * <p/>
  * For controllers an around aspect is created that wraps the {@link Callable#call()} method execution
- * in {@link com.ofg.infrastructure.correlationid.CorrelationCallable#withCorrelationId(groovy.lang.Closure)}
+ * in {@link com.ofg.infrastructure.correlationid.CorrelationCallable#withCorrelationId(java.util.concurrent.Callable)}
  * <p/>
  * For {@link org.springframework.web.client.RestOperations} we are wrapping all executions of the
  * <b>exchange</b> methods and we are extracting {@link HttpHeaders} from the passed {@link HttpEntity}.
@@ -49,6 +45,8 @@ import java.util.concurrent.Callable;
 public class CorrelationIdAspect {
 
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private static final int HTTP_ENTITY_PARAM_INDEX = 2;
 
     @Pointcut("@target(org.springframework.web.bind.annotation.RestController)")
     private void anyRestControllerAnnotated() {
@@ -70,15 +68,11 @@ public class CorrelationIdAspect {
     public Object wrapWithCorrelationId(ProceedingJoinPoint pjp) throws Throwable {
         final Callable callable = (Callable) pjp.proceed();
         log.debug("Wrapping callable with correlation id [" + CorrelationIdHolder.get() + "]");
-        return CorrelationCallable.withCorrelationId(new Closure<Object>(this, this) {
-            public Object doCall(Object it) {
+        return CorrelationCallable.withCorrelationId(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
                 return callable.call();
             }
-
-            public Object doCall() {
-                return doCall(null);
-            }
-
         });
     }
 
@@ -96,6 +90,7 @@ public class CorrelationIdAspect {
         return pjp.proceed(newArgs.toArray());
     }
 
+    @SuppressWarnings("unchecked")
     private HttpEntity createNewHttpEntity(HttpEntity httpEntity, String correlationId) {
         HttpHeaders newHttpHeaders = new HttpHeaders();
         newHttpHeaders.putAll(httpEntity.getHeaders());
@@ -105,19 +100,14 @@ public class CorrelationIdAspect {
 
     private List<Object> modifyHttpEntityInMethodArguments(ProceedingJoinPoint pjp, final HttpEntity newHttpEntity) {
         final List<Object> newArgs = new ArrayList<Object>();
-        DefaultGroovyMethods.eachWithIndex(pjp.getArgs(), new Closure<Object>(this, this) {
-            public void doCall(Object arg, int i) {
-                if (i != HTTP_ENTITY_PARAM_INDEX) {
-                    newArgs.add(i, arg);
-                } else {
-                    newArgs.add(i, newHttpEntity);
-                }
-
+        Object[] args = pjp.getArgs();
+        for (int i = 0; i < args.length; i++) {
+            if (i != HTTP_ENTITY_PARAM_INDEX) {
+                newArgs.add(i, args[i]);
+            } else {
+                newArgs.add(i, newHttpEntity);
             }
-
-        });
+        }
         return newArgs;
     }
-
-    private static final int HTTP_ENTITY_PARAM_INDEX = 2;
 }

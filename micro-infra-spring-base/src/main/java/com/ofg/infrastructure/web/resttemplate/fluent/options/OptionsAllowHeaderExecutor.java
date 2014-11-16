@@ -1,18 +1,16 @@
 package com.ofg.infrastructure.web.resttemplate.fluent.options;
 
-import com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.HttpEntityUtils;
+import com.ofg.infrastructure.web.resttemplate.fluent.common.Parameters;
 import com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.InvalidHttpMethodParametersException;
-import groovy.transform.PackageScope;
-import groovy.transform.TypeChecked;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Set;
 
+import static com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.HttpEntityUtils.getHttpEntityFrom;
+import static com.ofg.infrastructure.web.resttemplate.fluent.common.response.executor.UrlParsingUtils.appendPathToHost;
 import static org.springframework.http.HttpMethod.OPTIONS;
 
 /**
@@ -20,25 +18,24 @@ import static org.springframework.http.HttpMethod.OPTIONS;
  * it returns {@link org.springframework.http.HttpHeaders#ALLOW} header
  */
 class OptionsAllowHeaderExecutor implements AllowHeaderReceiving {
-    public OptionsAllowHeaderExecutor(Map params, RestOperations restOperations) {
+    private final Parameters params;
+    private final RestOperations restOperations;
+
+    public OptionsAllowHeaderExecutor(Parameters params, RestOperations restOperations) {
         this.params = params;
         this.restOperations = restOperations;
     }
 
     @Override
     public Set<HttpMethod> allow() {
-        if (params.url.asBoolean()) {
-            ResponseEntity response = restOperations.exchange((URI) params.url, OPTIONS, HttpEntityUtils.getHttpEntityFrom(params), Object.class);
+        if (params.hasUrl()) {
+            ResponseEntity response = restOperations.exchange(URI.create(appendPathToHost(params.host, params.url)), OPTIONS, getHttpEntityFrom(params), Object.class);
             return response.getHeaders().getAllow();
-        } else if (params.urlTemplate.asBoolean()) {
-            final Object[] objects = (Object[]) params.urlVariablesArray;
-            ResponseEntity response = restOperations.exchange(String.valueOf(params.host) + String.valueOf(params.urlTemplate), OPTIONS, HttpEntityUtils.getHttpEntityFrom(params), Object.class, DefaultGroovyMethods.asBoolean(objects) ? objects : (Map<String, ?>) params.urlVariablesMap);
+        } else if (params.hasUrlTemplate()) {
+            Object[] objects = params.urlVariablesArray;
+            ResponseEntity response = restOperations.exchange(params.host + params.urlTemplate, OPTIONS, getHttpEntityFrom(params), Object.class, objects != null ? objects : params.urlVariablesMap);
             return response.getHeaders().getAllow();
         }
-
         throw new InvalidHttpMethodParametersException(params);
     }
-
-    private final Map params;
-    private final RestOperations restOperations;
 }
