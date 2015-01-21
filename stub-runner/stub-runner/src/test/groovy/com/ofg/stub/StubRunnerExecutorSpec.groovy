@@ -28,20 +28,18 @@ class StubRunnerExecutorSpec extends Specification {
         when:
             executor.runStubs(repository, projects)
         then:
-            executor.getStubUrlByRelativePath('com/ofg/bye') == EXPECTED_STUB_URL
+            executor.getStubUrlByRelativePath('com/ofg/bye').get() == EXPECTED_STUB_URL
         cleanup:
             executor.shutdown()
     }
 
-    def 'should throw exception for unknown dependency path'() {
+    def 'should provide no URL for unknown dependency path'() {
         given:
             StubRunnerExecutor executor = new StubRunnerExecutor(portScanner, registry)
         when:
             executor.runStubs(repository, projects)
-            executor.getStubUrlByRelativePath('com/ofg/x')
         then:
-            def ex = thrown(UnknownDependencyException)
-            ex.message == "Unknown dependency with path 'com/ofg/x'"
+            !executor.getStubUrlByRelativePath('com/ofg/x').present
     }
 
 }

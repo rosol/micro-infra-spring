@@ -1,5 +1,6 @@
 package com.ofg.stub
 
+import com.google.common.base.Optional
 import com.ofg.stub.mapping.MappingDescriptor
 import com.ofg.stub.mapping.ProjectMetadata
 import com.ofg.stub.mapping.StubRepository
@@ -32,13 +33,18 @@ class StubRunnerExecutor {
         stubServers.each { StubServer stubServer -> stubServer.stop() }
     }
 
-    URL getStubUrlByRelativePath(String dependencyPath) {
-        StubServer srv = stubServers.find { it.projectMetadata.projectRelativePath == dependencyPath }
-        if (srv) {
-            return srv.getStubUrl()
-        } else {
-            throw new UnknownDependencyException(dependencyPath)
-        }
+    /**
+     * Finds {@link URL} to a stubbed dependency by given {@code dependencyPath}.
+     *
+     * @param dependencyPath path taken from microservice configuration from dependency settings
+     *
+     * @return {@link URL} to stubbed dependency wrapped if found otherwise {@link Optional.absent()}
+     * @throws UnknownDependencyException in case when there is no stub defined for given {@code dependencyPath}
+     */
+    Optional<URL> getStubUrlByRelativePath(String dependencyPath) {
+        return stubServers.findResult(Optional.absent()) {
+            if (it.projectMetadata.projectRelativePath == dependencyPath) Optional.of(it.getStubUrl())
+        } as Optional
     }
 
     private void startStubServers(Collection<ProjectMetadata> projects, StubRepository repository) {
