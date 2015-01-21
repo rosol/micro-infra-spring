@@ -32,6 +32,15 @@ class StubRunnerExecutor {
         stubServers.each { StubServer stubServer -> stubServer.stop() }
     }
 
+    URL getStubUrlByRelativePath(String dependencyPath) {
+        StubServer srv = stubServers.find { it.projectMetadata.projectRelativePath == dependencyPath }
+        if (srv) {
+            return srv.getStubUrl()
+        } else {
+            throw new UnknownDependencyException(dependencyPath)
+        }
+    }
+
     private void startStubServers(Collection<ProjectMetadata> projects, StubRepository repository) {
         projects.each { ProjectMetadata projectMetadata ->
             List<MappingDescriptor> mappings = repository.getProjectDescriptors(projectMetadata)
