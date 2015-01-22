@@ -26,6 +26,7 @@ class BatchStubRunnerSpec extends Specification {
     List<StubRunner> runners() {
         StubRunner runner = Mock(StubRunner)
         runner.findStubUrlByRelativePath(KNOWN_STUB_PATH) >> Optional.of(KNOWN_STUB_URL)
+        runner.findStubUrlByRelativePath(UNKNOWN_STUB_PATH) >> Optional.absent()
         return [runner]
     }
 
