@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
 /**
  * Manages lifecycle of multiple {@link StubRunner} instances.
  *
- * * @see StubRunner
+ * @see StubRunner
  */
 @CompileStatic
 class BatchStubRunner implements StubRunning {
